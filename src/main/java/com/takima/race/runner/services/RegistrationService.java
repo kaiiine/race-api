@@ -1,5 +1,6 @@
 package com.takima.race.runner.services;
 
+import com.takima.race.runner.entities.Race;
 import com.takima.race.runner.entities.Registration;
 import com.takima.race.runner.repositories.RegistrationRepository;
 import org.springframework.stereotype.Service;
@@ -24,11 +25,15 @@ public class RegistrationService {
     }
 
     public List<Registration> getRegistrationByRace(Long id_race){
-        return registrationRepository.getRegistrationByRace(id_race);
+        return registrationRepository.getRegistrationByRace_Id(id_race);
     }
 
     public List<Registration> getRegistrationByRunner(Long id_runner){
-        return registrationRepository.getRegistrationByRunner(id_runner);
+        return registrationRepository.getRegistrationByRunner_Id(id_runner);
+    }
+
+    public List<Race> getRacesByRunner(Long id_runner) {
+        return registrationRepository.getRacesByRunner(id_runner);
     }
 
     public Registration getRegistrationById(Long id){

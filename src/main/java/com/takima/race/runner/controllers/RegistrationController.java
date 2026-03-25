@@ -6,9 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/registration")
+@RequestMapping("/races")
 public class RegistrationController {
     private final RegistrationService registrationService;
 
@@ -16,7 +17,7 @@ public class RegistrationController {
         this.registrationService = registrationService;
     }
 
-    @GetMapping
+    @GetMapping("/registrations")
     public List<Registration> getAll(){
         return null;
     }
@@ -26,15 +27,15 @@ public class RegistrationController {
         return registrationService.getRegistrationByRunner(id_runner);
     }
 
-    @GetMapping("/races/{id_race}")
+    @GetMapping("/{id_race}/registrations")
     public List<Registration> getRegistrationByRace(@PathVariable Long id_race){
         return registrationService.getRegistrationByRace(id_race);
     }
 
-    @PostMapping("/{id_race}")
+    @PostMapping("/{id_race}/registrations")
     @ResponseStatus(HttpStatus.CREATED)
-    public Registration postRegistration(@PathVariable Long id_race, @RequestBody Long id_runner){
-        return registrationService.create(id_race, id_runner);
+    public Registration postRegistration(@PathVariable Long id_race, @RequestBody Map<String, Long> body){
+        return registrationService.create(id_race, body.get("runnerId"));
     }
 
     @DeleteMapping("/{id_race}/{id_runner}")

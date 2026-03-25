@@ -1,266 +1,131 @@
-# TP — Création d'une API REST : Gestion d'inscriptions à une course
+# 🏃 Race Runner API
 
-## Objectif
-
-L'objectif de ce TP est de concevoir et développer une **API REST** permettant de gérer l'inscription de coureurs à différentes courses.
-
-Cette API devra permettre :
-
-* de gérer les **coureurs**
-* de gérer les **courses**
-* de gérer les **inscriptions à une course**
-
-Les données devront être **persistées dans une base de données PostgreSQL**.
+> API REST — Gestion d'inscriptions à des courses  
+> **Spring Boot 4.0.3 • Java 21 • PostgreSQL • Docker**
 
 ---
 
-# Contexte
+## 🛠 Stack technique
 
-Une organisation sportive souhaite mettre en place une plateforme permettant de gérer les inscriptions à différentes courses.
-
-Chaque **coureur** peut s'inscrire à **plusieurs courses**, et chaque **course** peut accueillir **plusieurs coureurs**.
-
-Votre mission est de développer l'API qui permettra de gérer ces informations.
-
----
-
-# Stack technique
-
-Pour ce TP, vous utiliserez les technologies suivantes :
-
-* **Java 25**
-* **Spring Boot 4**
-* **Spring Web**
-* **Spring Data JPA**
-* **Flyway**
-
-
-* **Docker**
-* **PostgreSQL**
-* **Adminer**
+| Technologie | Version / Détail |
+|---|---|
+| Java | 21 |
+| Spring Boot | 4.0.3 |
+| Spring Web MVC | spring-boot-starter-webmvc |
+| Spring Data JPA | spring-boot-starter-data-jpa |
+| Flyway | spring-boot-starter-flyway + flyway-database-postgresql 11.20.3 |
+| PostgreSQL Driver | 42.7.10 |
+| Docker | PostgreSQL + Adminer via docker-compose |
 
 ---
 
-# Fork le projet
+## 🚀 Lancer le projet
 
-Avant de commencer le TP, forkez le projet pour avoir votre propre repo associé au TP :
-![fork.png](fork.png)
+### Prérequis
+- Java 21
+- Maven
+- Docker Desktop lancé
 
-Clonez ensuite le projet **depuis votre repo**
-
----
-
-# Lancer le projet
-
-## 1 — Démarrer la base de données
-
-Pour lancer votre base de données SQL et Adminer :
+### 1 — Démarrer la base de données
 
 ```bash
 docker compose up -d
 ```
 
-(vous devez avoir lancé Docker Desktop au préalable si vous êtes sur Windows)
+Lance PostgreSQL (port 5432) et Adminer (port 8081).
 
----
-
-## 2 — Accéder à Adminer
-
-Adminer permet de visualiser la base de données.
-
-URL :
-
-```
-http://localhost:8081
-```
-
-Paramètres de connexion :
-
-| Champ    | Valeur        |
-| -------- |---------------|
-| System   | PostgreSQL    |
-| Server   | race_postgres |
-| Username | race          |
-| Password | race          |
-| Database | race_db       |
-
----
-
-## 3 — Lancer l'application
-
-Lancer votre configuration directement sur IntelliJ.
-
-Sinon, depuis votre IDE ou en ligne de commande :
+### 2 — Lancer l'application
 
 ```bash
 mvn spring-boot:run
 ```
 
-L'API sera disponible sur :
+L'API est disponible sur **http://localhost:8080**
 
-```
-http://localhost:8080
-```
+### 3 — Adminer
 
----
+Accéder à **http://localhost:8081**
 
-# Modèle de données
-
-L'application repose sur trois entités principales.
-
-## Runner (Coureur)
-
-| Champ     | Type    | Description        |
-| --------- | ------- | ------------------ |
-| id        | Long    | identifiant unique |
-| firstName | String  | prénom             |
-| lastName  | String  | nom                |
-| email     | String  | email              |
-| age       | Integer | âge                |
+| Champ | Valeur |
+|---|---|
+| System | PostgreSQL |
+| Server | race_postgres |
+| Username | race |
+| Password | race |
+| Database | race_db |
 
 ---
 
-## Race (Course)
+## 📦 Modèle de données
 
-| Champ           | Type    | Description                    |
-| --------------- | ------- | ------------------------------ |
-| id              | Long    | identifiant                    |
-| name            | String  | nom de la course               |
-| date            | Date    | date de la course              |
-| location        | String  | lieu                           |
-| maxParticipants | Integer | nombre maximum de participants |
+### Runner
 
----
+| Champ | Type Java |
+|---|---|
+| id | Long (auto-généré) |
+| firstName | String |
+| lastName | String |
+| email | String |
+| age | Integer |
 
-## Registration (Inscription)
+### Race
 
-| Champ            | Type | Description              |
-| ---------------- | ---- | ------------------------ |
-| id               | Long | identifiant              |
-| runnerId         | Long | identifiant du coureur   |
-| raceId           | Long | identifiant de la course |
-| registrationDate | Date | date d'inscription       |
+| Champ | Type Java |
+|---|---|
+| id | Long (auto-généré) |
+| name | String |
+| date | LocalDate |
+| location | String |
+| maxParticipants | Integer |
 
----
+### Registration
 
-# API à implémenter
-
-## Gestion des coureurs
-
-### Lister les coureurs
-
-```
-GET /runners
-```
+| Champ | Type Java |
+|---|---|
+| id | Long (auto-généré) |
+| runner | Runner (@ManyToOne — FK runner_id) |
+| race | Race (@ManyToOne — FK race_id) |
+| registrationDate | LocalDate (auto : date du jour) |
 
 ---
 
-### Récupérer un coureur
+## 🔌 Endpoints implémentés
 
-```
-GET /runners/{id}
-```
+### Coureurs — `/runners`
 
-Si le coureur n'existe pas :
+| Méthode | URL | Description | Status |
+|---|---|---|---|
+| GET | `/runners` | Lister tous les coureurs | 200 |
+| GET | `/runners/{id}` | Récupérer un coureur | 200 / 404 |
+| GET | `/runners/{id}/races` | Lister les courses d'un coureur | 200 |
+| POST | `/runners` | Créer un coureur | **201 Created** |
+| PUT | `/runners/{id}` | Modifier un coureur | 200 / 404 |
+| DELETE | `/runners/{id}` | Supprimer un coureur | **204 No Content** |
 
-```
-404 Not Found
-```
-
----
-
-### Supprimer un coureur
-
-```
-DELETE /runners/{id}
-```
-
----
-
-### Créer un coureur
-
-```
-POST /runners
-```
-
-Body :
-
+**Body POST/PUT :**
 ```json
 {
   "firstName": "Alice",
   "lastName": "Martin",
-  "email": "alice.martin@example.com",
+  "email": "alice@example.com",
   "age": 30
 }
 ```
 
-Réponse attendue :
-
-```
-201 Created
-```
-
 ---
 
-### Modifier un coureur
+### Courses — `/races`
 
-```
-PUT /runners/{id}
-```
+| Méthode | URL | Description | Status |
+|---|---|---|---|
+| GET | `/races` | Lister toutes les courses | 200 |
+| GET | `/races?location=Paris` | Filtrer par lieu *(bonus)* | 200 |
+| GET | `/races/{id}` | Récupérer une course | 200 |
+| POST | `/races` | Créer une course | **201 Created** |
+| PUT | `/races/{id}` | Modifier une course | 200 |
+| DELETE | `/races/{id}` | Supprimer une course | **204 No Content** |
 
-Body :
-
-```json
-{
-  "firstName": "Alice",
-  "lastName": "Martin",
-  "email": "alice.martin@example.com",
-  "age": 31
-}
-```
-
-Réponse attendue :
-
-```
-201 Created
-```
-
----
-
-Si le coureur n'existe pas :
-
-```
-404 Not Found
-```
-
----
-
-# Gestion des courses
-
-### Lister les courses
-
-```
-GET /races
-```
-
----
-
-### Récupérer une course
-
-```
-GET /races/{id}
-```
-
----
-
-### Créer une course
-
-```
-POST /races
-```
-
-Body :
-
+**Body POST/PUT :**
 ```json
 {
   "name": "Semi-marathon de Paris",
@@ -272,151 +137,99 @@ Body :
 
 ---
 
-### Compter le nombre de participants d'une course
+### Inscriptions — `/races` (RegistrationController)
 
-GET /races/{raceId}/participants/count
+| Méthode | URL | Description | Status |
+|---|---|---|---|
+| GET | `/races/{id_race}/registrations` | Participants d'une course | 200 |
+| GET | `/races/runners/{id_runner}` | Inscriptions d'un coureur | 200 |
+| POST | `/races/{id_race}/registrations` | Inscrire un coureur | **201 Created** |
+| DELETE | `/races/{id_race}/{id_runner}` | Supprimer une inscription | **204 No Content** |
 
-Réponse :
-
+**Body POST :**
 ```json
-{
-  "count": 42
-}
+{ "runnerId": 1 }
 ```
 
-Si la course n'existe pas :
-
-```
-404 Not Found
-```
+> Le body est une `Map<String, Long>` — pas de DTO, on lit directement `body.get("runnerId")`.
 
 ---
 
-# Gestion des inscriptions
+## 🗄 Repositories et requêtes
 
-### Inscrire un coureur à une course
+Deux approches ont été utilisées pour générer les requêtes SQL.
 
-```
-POST /races/{raceId}/registrations
-```
+### Méthodes auto-générées par Spring Data JPA
 
-Body :
+Spring Data JPA génère automatiquement le SQL à partir du nom de la méthode.  
+Pour naviguer dans une relation `@ManyToOne`, on utilise le suffixe `_Id` :
 
-```json
-{
-  "runnerId": 1
-}
+```java
+List<Registration> getRegistrationByRace_Id(Long id_race);
+List<Registration> getRegistrationByRunner_Id(Long id_runner);
 ```
 
-Réponse :
+> Sans `_Id`, Spring ne saurait pas naviguer dans l'objet `Race` ou `Runner` pour accéder à leur `id`.
 
-```
-201 Created
-```
+### Requêtes JPQL avec `@Query`
+
+Pour explorer l'annotation `@Query` et écrire des requêtes plus explicites :
+
+| Repository | Méthode | Requête JPQL |
+|---|---|---|
+| RaceRepository | CountRegistrationByRace | `SELECT COUNT(r) FROM Registration r WHERE r.race.id=:id_race` |
+| RegistrationRepository | CountRegistrationByRace | `SELECT COUNT(r) FROM Registration r WHERE r.race.id=:id_race` |
+| RegistrationRepository | getRacesByRunner | `SELECT r.race FROM Registration r WHERE r.runner.id = :id_runner` |
+
+> `getRacesByRunner` est utilisée par `GET /runners/{id}/races` — elle retourne directement une `List<Race>` sans passer par les `Registration`.
 
 ---
 
-### Lister les participants d'une course
+## 🏗 Architecture
 
 ```
-GET /races/{raceId}/registrations
+src/main/java/com/takima/race/runner/
+├── controllers/
+│   ├── RaceController.java         → /races
+│   ├── RegistrationController.java → /races (inscriptions)
+│   └── RunnerController.java       → /runners
+├── entities/
+│   ├── Race.java
+│   ├── Registration.java
+│   └── Runner.java
+├── repositories/
+│   ├── RaceRepository.java
+│   ├── RegistrationRepository.java
+│   └── RunnerRepository.java
+└── services/
+    ├── RaceService.java
+    ├── RegistrationService.java
+    └── RunnerService.java
 ```
+
+> `RaceController` et `RegistrationController` sont tous deux mappés sur `/races`. Spring les différencie grâce aux sous-chemins des routes.
 
 ---
 
-### Lister les courses d'un coureur
+## 📋 Codes HTTP
 
-```
-GET /runners/{runnerId}/races
-```
-
----
-
-# Règles métier
-
-Votre API doit respecter les règles suivantes :
-
-### Un coureur ne peut pas être inscrit deux fois à la même course
-
-Si cela arrive :
-
-```
-409 Conflict
-```
+| Code | Signification | Utilisé pour |
+|---|---|---|
+| 200 OK | Succès | GET, PUT |
+| 201 Created | Ressource créée | POST (`@ResponseStatus(HttpStatus.CREATED)`) |
+| 204 No Content | Succès sans réponse | DELETE (`@ResponseStatus(HttpStatus.NO_CONTENT)`) |
+| 404 Not Found | Ressource inexistante | Runner introuvable (`RunnerService.getById`) |
 
 ---
 
-### Les coureurs doivent avoir une adresse mail correcte
-
-Si un **mail** ne continent pas de @ :
-
-```
-400 Bad Request
-```
-
----
-
-### Une course ne peut pas dépasser son nombre maximum de participants
-
-Si la course est complète :
-
-```
-409 Conflict
-```
-
----
-
-### Les ressources doivent exister
-
-Si un **runner** ou une **race** n'existe pas :
-
-```
-404 Not Found
-```
-
----
-
-# Codes HTTP attendus
-
-| Code | Signification         |
-| ---- | --------------------- |
-| 200  | Succès                |
-| 201  | Ressource créée       |
-| 400  | Requête invalide      |
-| 404  | Ressource non trouvée |
-| 409  | Conflit               |
-
----
-
-# Conseils
-
-* Implémentez l'API **progressivement**
-* Testez vos endpoints avec Postman
-* Vérifiez les données directement dans **Adminer**
-
----
-
-# Bonus (optionnel)
-
-Si vous avez terminé le TP, vous pouvez ajouter un filtre 
-sur le location pour le endpoint de récupération des courses
-
-## Filtrage
+## ⭐ Bonus — Filtre par location
 
 ```
 GET /races?location=Paris
 ```
 
----
+Sans paramètre, toutes les courses sont retournées. Avec le paramètre, seules les courses dont le lieu correspond exactement sont retournées.
 
-# Livrables
-
-Vous devez rendre :
-
-* le **code source**
-* un **README expliquant comment lancer le projet**
-* les **endpoints implémentés**
-
----
-
-Bon développement !
+- **RaceRepository** : `findByLocation(String location)` — méthode auto-générée par Spring Data JPA
+- **RaceService** : si `location` non null et non vide → `findByLocation`, sinon `findAll`
+- **RaceController** : `@RequestParam(required = false) String location` — paramètre totalement optionnel
