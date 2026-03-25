@@ -29,4 +29,21 @@ public class RunnerService {
                 )
         );
     }
+
+    public Runner create(Runner runner){
+        return runnerRepository.save(runner);
+    }
+
+    public void delete(Long id){
+        runnerRepository.deleteById(id);
+    }
+
+    public Runner update(long id, Runner runner){
+        Runner oldRunner = getById(id);
+        oldRunner.setLastName(runner.getLastName());
+        oldRunner.setFirstName(runner.getFirstName());
+        oldRunner.setEmail(runner.getEmail());
+        oldRunner.setAge(runner.getAge());
+        return runnerRepository.save(oldRunner);
+    }
 }
